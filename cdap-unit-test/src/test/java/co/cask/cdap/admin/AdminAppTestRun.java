@@ -16,6 +16,7 @@
 
 package co.cask.cdap.admin;
 
+import co.cask.cdap.api.NamespaceSummary;
 import co.cask.cdap.api.artifact.ArtifactSummary;
 import co.cask.cdap.api.common.Bytes;
 import co.cask.cdap.api.dataset.lib.FileSet;
@@ -155,6 +156,7 @@ public class AdminAppTestRun extends TestFrameworkTestBase {
 
     String namespaceX = "x";
     try {
+      getNamespaceAdmin().create(new NamespaceMeta.Builder().setName(namespaceX).build());
       URI serviceURI = serviceManager.getServiceURL(10, TimeUnit.SECONDS).toURI();
 
       // dataset nn should not exist
@@ -249,13 +251,18 @@ public class AdminAppTestRun extends TestFrameworkTestBase {
       Assert.assertNull(getDataset("nn").get());
 
       // test Admin.namespaceExists()
-      HttpRequest request = HttpRequest.get(serviceURI.resolve("namespaces/y/plugins").toURL()).build();
+      HttpRequest request = HttpRequest.get(serviceURI.resolve("namespaces/y").toURL()).build();
       response = HttpRequests.execute(request);
       Assert.assertEquals(404, response.getResponseCode());
 
+      // test Admin.getNamespaceSummary()
+      request = HttpRequest.get(serviceURI.resolve("namespaces/default").toURL()).build();
+      response = HttpRequests.execute(request);
+      NamespaceSummary namespaceSummary = GSON.fromJson(response.getResponseBodyAsString(), NamespaceSummary.class);
+      Assert.assertEquals("default", namespaceSummary.getName());
+
       // test ArtifactManager.listArtifacts()
       ArtifactId pluginArtifactId = new NamespaceId(namespaceX).artifact("r1", "1.0.0");
-      getNamespaceAdmin().create(new NamespaceMeta.Builder().setName(namespaceX).build());
 
       // add a plugin artifact to namespace X
       addPluginArtifact(pluginArtifactId, ADMIN_APP_ARTIFACT, DummyPlugin.class);
