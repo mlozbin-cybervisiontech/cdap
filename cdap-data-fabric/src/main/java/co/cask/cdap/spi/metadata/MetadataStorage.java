@@ -22,7 +22,7 @@ import java.util.List;
 /**
  * The Storage Provider API for Metadata.
  */
-public interface MetadataStorage {
+public interface MetadataStorage extends AutoCloseable {
 
   /**
    * Apply the given mutation to the metadata state.
