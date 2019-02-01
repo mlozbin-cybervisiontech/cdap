@@ -183,7 +183,7 @@ public class DefaultAdmin extends DefaultDatasetManager implements Admin {
   public NamespaceSummary getNamespaceSummary(String namespace) throws IOException {
     try {
       NamespaceMeta meta = namespaceQueryAdmin.get(new NamespaceId(namespace));
-      return new NamespaceSummary(meta.getName(), meta.getDescription(), 0L);
+      return new NamespaceSummary(meta.getName(), meta.getDescription(), meta.getGeneration());
     } catch (NamespaceNotFoundException e) {
       return null;
     } catch (IOException e) {

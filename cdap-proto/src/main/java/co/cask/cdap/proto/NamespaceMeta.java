@@ -1,5 +1,5 @@
 /*
- * Copyright © 2014-2018 Cask Data, Inc.
+ * Copyright © 2014-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -232,13 +232,14 @@ public final class NamespaceMeta {
     }
     NamespaceMeta other = (NamespaceMeta) o;
     return Objects.equals(name, other.name)
+      && generation == other.generation
       && Objects.equals(description, other.description)
       && Objects.equals(config, other.config);
   }
 
   @Override
   public int hashCode() {
-    return Objects.hash(name, description, config);
+    return Objects.hash(name, description, generation, config);
   }
 
   @Override
@@ -246,7 +247,8 @@ public final class NamespaceMeta {
     return "NamespaceMeta{" +
       "name='" + name + '\'' +
       ", description='" + description + '\'' +
-      ", config=" + getConfig() +
+      ", generation=" + generation +
+      ", config=" + config +
       '}';
   }
 }

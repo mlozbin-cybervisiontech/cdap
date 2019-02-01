@@ -194,9 +194,7 @@ public class AppFabricTestHelper {
     NamespaceAdmin namespaceAdmin = getInjector(cConf).getInstance(NamespaceAdmin.class);
     try {
       if (!namespaceAdmin.exists(namespaceId)) {
-        namespaceAdmin.create(new NamespaceMeta.Builder()
-                                .setName(namespaceId)
-                                .build());
+        namespaceAdmin.create(new NamespaceMeta.Builder().setName(namespaceId).build());
       }
     } catch (NamespaceAlreadyExistsException e) {
       // There can be race between exists() and create() call.

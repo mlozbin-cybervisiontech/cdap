@@ -156,7 +156,6 @@ public class AdminAppTestRun extends TestFrameworkTestBase {
 
     String namespaceX = "x";
     try {
-      getNamespaceAdmin().create(new NamespaceMeta.Builder().setName(namespaceX).build());
       URI serviceURI = serviceManager.getServiceURL(10, TimeUnit.SECONDS).toURI();
 
       // dataset nn should not exist
@@ -256,10 +255,14 @@ public class AdminAppTestRun extends TestFrameworkTestBase {
       Assert.assertEquals(404, response.getResponseCode());
 
       // test Admin.getNamespaceSummary()
-      request = HttpRequest.get(serviceURI.resolve("namespaces/default").toURL()).build();
+      NamespaceMeta namespaceXMeta = new NamespaceMeta.Builder().setName(namespaceX).setGeneration(10L).build();
+      getNamespaceAdmin().create(namespaceXMeta);
+      request = HttpRequest.get(serviceURI.resolve("namespaces/" + namespaceX).toURL()).build();
       response = HttpRequests.execute(request);
       NamespaceSummary namespaceSummary = GSON.fromJson(response.getResponseBodyAsString(), NamespaceSummary.class);
-      Assert.assertEquals("default", namespaceSummary.getName());
+      NamespaceSummary expectedX = new NamespaceSummary(namespaceXMeta.getName(), namespaceXMeta.getDescription(),
+                                                        namespaceXMeta.getGeneration());
+      Assert.assertEquals(expectedX, namespaceSummary);
 
       // test ArtifactManager.listArtifacts()
       ArtifactId pluginArtifactId = new NamespaceId(namespaceX).artifact("r1", "1.0.0");
@@ -282,7 +285,9 @@ public class AdminAppTestRun extends TestFrameworkTestBase {
 
     } finally {
       serviceManager.stop();
-      getNamespaceAdmin().delete(new NamespaceId(namespaceX));
+      if (getNamespaceAdmin().exists(new NamespaceId(namespaceX))) {
+        getNamespaceAdmin().delete(new NamespaceId(namespaceX));
+      }
     }
   }
 
