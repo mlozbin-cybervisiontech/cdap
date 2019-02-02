@@ -74,6 +74,7 @@ public class ValidationHandler extends AbstractHttpServiceHandler {
   private static final String ARTIFACT_STREAMING_NAME = "cdap-data-streams";
 
   @POST
+
   @Path("v1/contexts/{context}/validations/stage")
   public void validateStage(HttpServiceRequest request, HttpServiceResponder responder,
                             @PathParam("context") String namespace) throws IOException {
