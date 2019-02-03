@@ -70,7 +70,7 @@ public final class MetricsClientRuntimeModule extends RuntimeModule {
 
   @Override
   public Module getDistributedModules() {
-    return new DistributedMetricsClientModule();
+    return new MessagingMetricsClientModule();
   }
 
   /**

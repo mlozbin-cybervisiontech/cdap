@@ -69,7 +69,7 @@ public class MetricHBaseTableUtilTest {
   public void testGetVersion() throws Exception {
     // Verify new metric datasets are properly recognized as 2.8+ version from now on
     HBaseMetricsTableDefinition definition =
-      new HBaseMetricsTableDefinition("foo", TEST_HBASE.getConfiguration(), hBaseTableUtil,
+      new HBaseMetricsTableDefinition("foo", TEST_HBASE.getConfiguration(), () -> hBaseTableUtil,
                                       new LocalLocationFactory(TMP_FOLDER.newFolder()), cConf);
     DatasetSpecification spec = definition.configure("metricV2.8", DatasetProperties.EMPTY);
 

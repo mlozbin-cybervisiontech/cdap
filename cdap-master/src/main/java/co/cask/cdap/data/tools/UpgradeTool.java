@@ -60,7 +60,6 @@ import co.cask.cdap.data2.transaction.TransactionSystemClientService;
 import co.cask.cdap.data2.util.hbase.CoprocessorManager;
 import co.cask.cdap.data2.util.hbase.HBaseTableUtil;
 import co.cask.cdap.explore.guice.ExploreClientModule;
-import co.cask.cdap.internal.app.runtime.artifact.ArtifactStore;
 import co.cask.cdap.internal.app.runtime.schedule.queue.JobQueueDataset;
 import co.cask.cdap.internal.app.runtime.schedule.store.ProgramScheduleStoreDataset;
 import co.cask.cdap.internal.app.runtime.schedule.store.ScheduleStoreTableUtil;
@@ -70,7 +69,6 @@ import co.cask.cdap.logging.meta.LoggingStoreTableUtil;
 import co.cask.cdap.messaging.guice.MessagingClientModule;
 import co.cask.cdap.messaging.store.hbase.HBaseTableFactory;
 import co.cask.cdap.metrics.guice.MetricsStoreModule;
-import co.cask.cdap.metrics.store.DefaultMetricDatasetFactory;
 import co.cask.cdap.security.auth.context.AuthenticationContextModules;
 import co.cask.cdap.security.authorization.AuthorizationEnforcementModule;
 import co.cask.cdap.security.guice.SecureStoreServerModule;
@@ -495,10 +493,6 @@ public class UpgradeTool {
     LoggingStoreTableUtil.setupDatasets(datasetFramework);
     // scheduler metadata
     ScheduleStoreTableUtil.setupDatasets(datasetFramework);
-
-    // metrics data
-    DefaultMetricDatasetFactory factory = new DefaultMetricDatasetFactory(cConf, datasetFramework);
-    DefaultMetricDatasetFactory.setupDatasets(cConf, factory);
 
     // Usage registry
     UsageDataset.setupDatasets(datasetFramework);
