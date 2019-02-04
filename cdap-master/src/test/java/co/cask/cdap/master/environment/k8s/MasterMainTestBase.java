@@ -18,11 +18,26 @@ package co.cask.cdap.master.environment.k8s;
 
 import co.cask.cdap.common.conf.CConfiguration;
 import co.cask.cdap.common.conf.Constants;
+import co.cask.cdap.common.conf.SConfiguration;
+import co.cask.cdap.common.guice.ConfigModule;
+import co.cask.cdap.common.guice.IOModule;
 import co.cask.cdap.common.lang.ClassLoaders;
+import co.cask.cdap.messaging.MessagingService;
+import co.cask.cdap.messaging.guice.MessagingServerRuntimeModule;
+import co.cask.cdap.messaging.server.MessagingHttpService;
+import co.cask.cdap.metrics.guice.MetricsClientRuntimeModule;
+import com.google.common.util.concurrent.Service;
+import com.google.inject.AbstractModule;
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+import org.apache.hadoop.conf.Configuration;
+import org.apache.twill.discovery.DiscoveryService;
+import org.apache.twill.discovery.DiscoveryServiceClient;
 import org.junit.Assert;
 import org.junit.ClassRule;
 import org.junit.rules.TemporaryFolder;
 
+import java.io.Closeable;
 import java.io.File;
 import java.io.IOException;
 import java.io.Writer;
@@ -38,7 +53,7 @@ public class MasterMainTestBase {
   @ClassRule
   public static final TemporaryFolder TEMP_FOLDER = new TemporaryFolder();
 
-  protected static void initialize(Consumer<CConfiguration> confUpdater) throws IOException {
+  static void initialize(Consumer<CConfiguration> confUpdater) throws IOException {
     CConfiguration cConf = CConfiguration.create();
     cConf.clear();
     cConf.set(Constants.CFG_LOCAL_DATA_DIR, TEMP_FOLDER.newFolder().getAbsolutePath());
@@ -52,5 +67,49 @@ public class MasterMainTestBase {
     try (Writer writer = Files.newBufferedWriter(new File(confDir, "cdap-site.xml").toPath())) {
       cConf.writeXml(writer);
     }
+  }
+
+  /**
+   * Starts a new TMS service that uses the same configurations and discovery service from the given Guice
+   * {@link Injector} that are constructed by master main service.
+   *
+   * @param mainInjector the Guice injector used by the master main service
+   * @return a {@link Closeable} to shutdown the TMS
+   */
+  Closeable startTMS(Injector mainInjector) {
+    // start TMS by sharing the same discovery service
+    Injector tmsInject = Guice.createInjector(
+      new ConfigModule(mainInjector.getInstance(CConfiguration.class),
+                       mainInjector.getInstance(Configuration.class),
+                       mainInjector.getInstance(SConfiguration.class)),
+      new IOModule(),
+      new MetricsClientRuntimeModule().getDistributedModules(),
+      new MessagingServerRuntimeModule().getStandaloneModules(),
+      new AbstractModule() {
+        @Override
+        protected void configure() {
+          bind(DiscoveryServiceClient.class).toInstance(mainInjector.getInstance(DiscoveryServiceClient.class));
+          bind(DiscoveryService.class).toInstance(mainInjector.getInstance(DiscoveryService.class));
+        }
+      }
+    );
+
+    MessagingService tms = tmsInject.getInstance(MessagingService.class);
+    MessagingHttpService httpService = tmsInject.getInstance(MessagingHttpService.class);
+
+    if (tms instanceof Service) {
+      ((Service) tms).startAndWait();
+    }
+    httpService.startAndWait();
+
+    return () -> {
+      try {
+        httpService.stopAndWait();
+      } finally {
+        if (tms instanceof Service) {
+          ((Service) tms).stopAndWait();
+        }
+      }
+    };
   }
 }

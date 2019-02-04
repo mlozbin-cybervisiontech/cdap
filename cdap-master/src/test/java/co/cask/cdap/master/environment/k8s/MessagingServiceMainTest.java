@@ -41,7 +41,7 @@ import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 /**
- *
+ * Unit test for {@link MessagingServiceMain}.
  */
 public class MessagingServiceMainTest extends MasterMainTestBase {
 

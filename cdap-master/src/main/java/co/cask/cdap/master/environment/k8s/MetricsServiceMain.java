@@ -16,15 +16,31 @@
 
 package co.cask.cdap.master.environment.k8s;
 
+import co.cask.cdap.api.metrics.MetricsCollectionService;
+import co.cask.cdap.api.metrics.MetricsContext;
+import co.cask.cdap.common.conf.CConfiguration;
+import co.cask.cdap.common.conf.Constants;
 import co.cask.cdap.common.logging.LoggingContext;
+import co.cask.cdap.common.logging.ServiceLoggingContext;
+import co.cask.cdap.data.runtime.SystemDatasetRuntimeModule;
 import co.cask.cdap.messaging.guice.MessagingClientModule;
+import co.cask.cdap.metrics.guice.MetricsHandlerModule;
+import co.cask.cdap.metrics.guice.MetricsProcessorStatusServiceModule;
 import co.cask.cdap.metrics.guice.MetricsStoreModule;
+import co.cask.cdap.metrics.process.MessagingMetricsProcessorServiceFactory;
+import co.cask.cdap.metrics.process.MetricsProcessorStatusService;
+import co.cask.cdap.metrics.query.MetricsQueryService;
+import co.cask.cdap.proto.id.NamespaceId;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.Injector;
 import com.google.inject.Module;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import java.util.Arrays;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 import javax.annotation.Nullable;
 
 /**
@@ -41,31 +57,37 @@ public class MetricsServiceMain extends AbstractMasterMain {
 
   @Override
   protected void addServices(Injector injector, List<? super Service> services) {
+    CConfiguration cConf = injector.getInstance(CConfiguration.class);
+    Set<Integer> topicNumbers = IntStream.range(0, cConf.getInt(Constants.Metrics.MESSAGING_TOPIC_NUM))
+      .boxed()
+      .collect(Collectors.toSet());
 
+    MetricsContext metricsContext = injector.getInstance(MetricsCollectionService.class)
+      .getContext(Constants.Metrics.METRICS_PROCESSOR_CONTEXT);
+
+    services.add(injector.getInstance(MessagingMetricsProcessorServiceFactory.class)
+                   .create(topicNumbers, metricsContext, 0));
+    services.add(injector.getInstance(MetricsProcessorStatusService.class));
+    services.add(injector.getInstance(MetricsQueryService.class));
   }
 
   @Override
   protected List<Module> getServiceModules() {
     return Arrays.asList(
       new MessagingClientModule(),
-      new MetricsStoreModule()
-//      new DataFabricModules(txClientId).getDistributedModules(),
-//      new DataSetsModules().getDistributedModules(),
-//      new MetricsProcessorTwillRunnable.MetricsProcessorModule(twillContext),
-//      new MetricsProcessorStatusServiceModule(),
-//      new AuditModule().getDistributedModules(),
-//      new AbstractModule() {
-//        @Override
-//        protected void configure() {
-//          bind(OwnerAdmin.class).to(DefaultOwnerAdmin.class);
-//        }
-//      }
+      new SystemDatasetRuntimeModule().getStandaloneModules(),
+      new MetricsStoreModule(),
+      new FactoryModuleBuilder().build(MessagingMetricsProcessorServiceFactory.class),
+      new MetricsProcessorStatusServiceModule(),
+      new MetricsHandlerModule()
     );
   }
 
   @Nullable
   @Override
   protected LoggingContext getLoggingContext() {
-    return null;
+    return new ServiceLoggingContext(NamespaceId.SYSTEM.getNamespace(),
+                                     Constants.Logging.COMPONENT_NAME,
+                                     Constants.Service.METRICS);
   }
 }
