@@ -12,17 +12,7 @@
  * WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the
  * License for the specific language governing permissions and limitations under
  * the License.
- */
+*/
 
-@import '~styles/colors.scss';
-@import '~components/PipelineList/DraftPipelineView/DraftPipelineViewVariables.scss';
-
-.pipeline-draft-view {
-  padding: 0 45px 15px 45px;
-  background-color: $bg-color;
-
-  .draft-header {
-    height: $header-height;
-    line-height: $header-height;
-  }
-}
+$bg-color: $grey-06;
+$header-height: 70px;
