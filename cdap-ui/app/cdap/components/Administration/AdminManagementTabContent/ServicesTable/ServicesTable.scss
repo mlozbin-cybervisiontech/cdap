@@ -16,15 +16,7 @@
 
 @import '../../../PipelineSummary/StickyTableHeader.scss';
 @import '../../../../styles/variables.scss';
-
-$table_cell_border_color: gray;
-$table_background_color: transparent;
-$table_border_color: lightgray;
-$instance_bg_color: $grey-05;
-$instance_bg_hover_color: white;
-$height_of_header: 35px;
-$height_of_conent: 415px;
-$table_row_hover_bg_color: $grey-08;
+@import '../AdminManagementTabContentVariables.scss';
 
 .services-table {
   background: $cdap-white;
