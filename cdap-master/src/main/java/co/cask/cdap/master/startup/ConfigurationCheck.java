@@ -178,9 +178,11 @@ class ConfigurationCheck extends AbstractMasterCheck {
 
   private void checkMessagingTopics(Set<String> problemKeys) {
     validateMessagingTopic(Constants.Audit.TOPIC, problemKeys);
-    validateMessagingTopic(Constants.Notification.TOPIC, problemKeys);
     validateMessagingTopic(Constants.Dataset.DATA_EVENT_TOPIC, problemKeys);
+    validateMessagingTopic(Constants.Metadata.MESSAGING_TOPIC, problemKeys);
     validateMessagingTopic(Constants.Metrics.TOPIC_PREFIX, problemKeys);
+    validateMessagingTopic(Constants.Metrics.ADMIN_TOPIC, problemKeys);
+    validateMessagingTopic(Constants.Logging.TMS_TOPIC_PREFIX, problemKeys);
     validateMessagingTopic(Constants.Scheduler.TIME_EVENT_TOPIC, problemKeys);
     validateMessagingTopic(Constants.AppFabric.PROGRAM_STATUS_EVENT_TOPIC, problemKeys);
     validateMessagingTopic(Constants.AppFabric.PROGRAM_STATUS_RECORD_EVENT_TOPIC, problemKeys);

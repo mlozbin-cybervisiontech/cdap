@@ -49,11 +49,6 @@ public class ConfigurationCheckTest {
   }
 
   @Test (expected = RuntimeException.class)
-  public void invalidNotificationTopicTest() {
-    runConfigurationCheck(Constants.Notification.TOPIC, "invalidtopic#1");
-  }
-
-  @Test (expected = RuntimeException.class)
   public void invalidAuditTopicTest() {
     runConfigurationCheck(Constants.Audit.TOPIC, "invalid*topic");
   }

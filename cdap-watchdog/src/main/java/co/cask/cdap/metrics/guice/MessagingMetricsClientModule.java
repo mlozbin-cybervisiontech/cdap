@@ -18,12 +18,14 @@ package co.cask.cdap.metrics.guice;
 import co.cask.cdap.api.data.schema.UnsupportedTypeException;
 import co.cask.cdap.api.metrics.MetricValues;
 import co.cask.cdap.api.metrics.MetricsCollectionService;
+import co.cask.cdap.api.metrics.MetricsSystemClient;
 import co.cask.cdap.common.guice.IOModule;
 import co.cask.cdap.common.io.DatumWriter;
 import co.cask.cdap.internal.io.DatumWriterFactory;
 import co.cask.cdap.internal.io.SchemaGenerator;
 import co.cask.cdap.messaging.MessagingService;
 import co.cask.cdap.metrics.collect.MessagingMetricsCollectionService;
+import co.cask.cdap.metrics.process.RemoteMetricsSystemClient;
 import com.google.common.base.Throwables;
 import com.google.common.reflect.TypeToken;
 import com.google.inject.PrivateModule;
@@ -43,6 +45,9 @@ final class MessagingMetricsClientModule extends PrivateModule {
   protected void configure() {
     bind(MetricsCollectionService.class).to(MessagingMetricsCollectionService.class).in(Scopes.SINGLETON);
     expose(MetricsCollectionService.class);
+
+    bind(MetricsSystemClient.class).to(RemoteMetricsSystemClient.class).in(Scopes.SINGLETON);
+    expose(MetricsSystemClient.class);
   }
 
   @Provides

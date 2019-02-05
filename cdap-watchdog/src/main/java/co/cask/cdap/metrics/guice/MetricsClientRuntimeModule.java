@@ -17,9 +17,11 @@ package co.cask.cdap.metrics.guice;
 
 import co.cask.cdap.api.metrics.MetricStore;
 import co.cask.cdap.api.metrics.MetricsCollectionService;
+import co.cask.cdap.api.metrics.MetricsSystemClient;
 import co.cask.cdap.common.conf.Constants;
 import co.cask.cdap.common.runtime.RuntimeModule;
 import co.cask.cdap.metrics.collect.LocalMetricsCollectionService;
+import co.cask.cdap.metrics.process.DirectMetricsSystemClient;
 import co.cask.cdap.metrics.process.MessagingMetricsProcessorService;
 import co.cask.cdap.metrics.process.MessagingMetricsProcessorServiceFactory;
 import co.cask.cdap.metrics.store.DefaultMetricStore;
@@ -85,5 +87,9 @@ public final class MetricsClientRuntimeModule extends RuntimeModule {
 
     binder.bind(MetricsCollectionService.class).to(LocalMetricsCollectionService.class).in(Scopes.SINGLETON);
     binder.expose(MetricsCollectionService.class);
+
+    // In local mode, we operates on the MetricsStore directly
+    binder.bind(MetricsSystemClient.class).to(DirectMetricsSystemClient.class);
+    binder.expose(MetricsSystemClient.class);
   }
 }

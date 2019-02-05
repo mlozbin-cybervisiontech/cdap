@@ -1,5 +1,5 @@
 /*
- * Copyright © 2015 Cask Data, Inc.
+ * Copyright © 2015-2019 Cask Data, Inc.
  *
  * Licensed under the Apache License, Version 2.0 (the "License"); you may not
  * use this file except in compliance with the License. You may obtain a copy of
@@ -30,7 +30,7 @@ import java.util.function.Predicate;
 public class MetricDeleteQuery {
   private final long startTs;
   private final long endTs;
-  private final Collection<String> metricNames;
+  private final List<String> metricNames;
   private final Map<String, String> sliceByTagValues;
   private final List<String> aggregationTags;
 
@@ -48,7 +48,7 @@ public class MetricDeleteQuery {
                            Map<String, String> sliceByTagValues, List<String> aggregationTags) {
     this.startTs = startTs;
     this.endTs = endTs;
-    this.metricNames = metricNames;
+    this.metricNames = new ArrayList<>(metricNames);
     this.sliceByTagValues = new LinkedHashMap<>(sliceByTagValues);
     this.aggregationTags = new ArrayList<>(aggregationTags);
   }

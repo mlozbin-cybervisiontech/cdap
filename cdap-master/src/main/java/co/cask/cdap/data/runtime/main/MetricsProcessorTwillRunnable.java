@@ -39,6 +39,7 @@ import co.cask.cdap.metrics.guice.MetricsClientRuntimeModule;
 import co.cask.cdap.metrics.guice.MetricsProcessorStatusServiceModule;
 import co.cask.cdap.metrics.guice.MetricsStoreModule;
 import co.cask.cdap.metrics.process.MessagingMetricsProcessorServiceFactory;
+import co.cask.cdap.metrics.process.MetricsAdminSubscriberService;
 import co.cask.cdap.metrics.process.MetricsProcessorStatusService;
 import co.cask.cdap.metrics.runtime.MessagingMetricsProcessorRuntimeService;
 import co.cask.cdap.proto.id.NamespaceId;
@@ -49,9 +50,12 @@ import co.cask.cdap.security.impersonation.OwnerAdmin;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.util.concurrent.Service;
 import com.google.inject.AbstractModule;
+import com.google.inject.Binding;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.PrivateModule;
+import com.google.inject.Scopes;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Names;
 import org.apache.hadoop.conf.Configuration;
@@ -94,6 +98,13 @@ public final class MetricsProcessorTwillRunnable extends AbstractMasterTwillRunn
   public void addServices(List<? super Service> services) {
     services.add(injector.getInstance(MessagingMetricsProcessorRuntimeService.class));
     services.add(injector.getInstance(MetricsProcessorStatusService.class));
+
+    // If a binding for MetricsAdminSubscriberService exists, add it as well.
+    Binding<MetricsAdminSubscriberService> binding = injector.getExistingBinding(
+      Key.get(MetricsAdminSubscriberService.class));
+    if (binding != null) {
+      services.add(binding.getProvider().get());
+    }
   }
 
   @VisibleForTesting
@@ -143,6 +154,12 @@ public final class MetricsProcessorTwillRunnable extends AbstractMasterTwillRunn
 
       bind(MessagingMetricsProcessorRuntimeService.class);
       expose(MessagingMetricsProcessorRuntimeService.class);
+
+      // Also bind the admin service if it is the first instance
+      if (instanceId == 0) {
+        bind(MetricsAdminSubscriberService.class).in(Scopes.SINGLETON);
+        expose(MetricsAdminSubscriberService.class);
+      }
     }
   }
 }
