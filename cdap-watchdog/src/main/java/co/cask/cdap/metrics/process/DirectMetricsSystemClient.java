@@ -26,8 +26,8 @@ import co.cask.cdap.api.metrics.MetricsSystemClient;
 import co.cask.cdap.api.metrics.TagValue;
 import com.google.inject.Inject;
 
+import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -50,11 +50,12 @@ public class DirectMetricsSystemClient implements MetricsSystemClient {
   }
 
   @Override
-  public Collection<MetricTimeSeries> query(int start, int end, Map<String, String> tags, Collection<String> metrics) {
+  public Collection<MetricTimeSeries> query(int start, int end, Map<String, String> tags,
+                                            Collection<String> metrics, Collection<String> groupByTags) {
     Map<String, AggregationFunction> metricsMap = metrics.stream()
       .collect(Collectors.toMap(m -> m, m -> AggregationFunction.SUM));
     return metricStore.query(new MetricDataQuery(start, end, Integer.MAX_VALUE,
-                                                 metricsMap, tags, Collections.emptyList()));
+                                                 metricsMap, tags, new ArrayList<>(groupByTags)));
   }
 
   @Override

@@ -18,6 +18,7 @@ package co.cask.cdap.api.metrics;
 
 import java.io.IOException;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -43,7 +44,20 @@ public interface MetricsSystemClient {
    * @return a {@link Collection} of {@link MetricTimeSeries} for the query result
    */
   default Collection<MetricTimeSeries> query(Map<String, String> tags, Collection<String> metrics) throws IOException {
-    return query(0, Integer.MAX_VALUE, tags, metrics);
+    return query(tags, metrics, Collections.emptySet());
+  }
+
+  /**
+   * Queries aggregated metrics with the max time range.
+   *
+   * @param tags the metrics context tags to query
+   * @param metrics list of metrics name to query
+   * @param groupByTags the collection of tag name to group the results
+   * @return a {@link Collection} of {@link MetricTimeSeries} for the query result
+   */
+  default Collection<MetricTimeSeries> query(Map<String, String> tags, Collection<String> metrics,
+                                             Collection<String> groupByTags) throws IOException {
+    return query(0, Integer.MAX_VALUE, tags, metrics, groupByTags);
   }
 
   /**
@@ -55,8 +69,23 @@ public interface MetricsSystemClient {
    * @param metrics list of metrics name to query
    * @return a {@link Collection} of {@link MetricTimeSeries} for the query result
    */
-  Collection<MetricTimeSeries> query(int start, int end,
-                                     Map<String, String> tags, Collection<String> metrics) throws IOException;
+  default Collection<MetricTimeSeries> query(int start, int end,
+                                             Map<String, String> tags, Collection<String> metrics) throws IOException {
+    return query(start, end, tags, metrics, Collections.emptySet());
+  }
+
+  /**
+   * Queries aggregated metrics for the given time range.
+   *
+   * @param start minimal timestamp in seconds to query data for (inclusive)
+   * @param end maximum timestamp in seconds to query data for (exclusive)
+   * @param tags the metrics context tags to query
+   * @param metrics list of metrics name to query
+   * @param groupByTags the collection of tag name to group the results
+   * @return a {@link Collection} of {@link MetricTimeSeries} for the query result
+   */
+  Collection<MetricTimeSeries> query(int start, int end, Map<String, String> tags,
+                                     Collection<String> metrics, Collection<String> groupByTags) throws IOException;
 
   /**
    * Searches for metrics names matching the given tags.

@@ -22,6 +22,8 @@ import com.google.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.io.IOException;
+
 /**
  * Retrieves information about a run of a MapReduce job, using {@link MRJobClient} and
  * then {@link LocalMRJobInfoFetcher} if necessary.
@@ -44,7 +46,7 @@ public class DistributedMRJobInfoFetcher implements MRJobInfoFetcher {
    * @return a {@link MRJobInfo} containing information about a particular MapReduce program run.
    */
   @Override
-  public MRJobInfo getMRJobInfo(Id.Run runId) {
+  public MRJobInfo getMRJobInfo(Id.Run runId) throws IOException {
     try {
       return mrJobClient.getMRJobInfo(runId);
     } catch (Exception e) {

@@ -100,7 +100,8 @@ public class RemoteMetricsSystemClient implements MetricsSystemClient {
   @Override
   public Collection<MetricTimeSeries> query(int start, int end,
                                             Map<String, String> tags,
-                                            Collection<String> metrics) throws IOException {
+                                            Collection<String> metrics,
+                                            Collection<String> groupByTags) throws IOException {
     String metricsParam = Joiner.on("&metric=").join(metrics);
     if (!metricsParam.isEmpty()) {
       metricsParam = "&metric=" + metricsParam;
@@ -109,9 +110,13 @@ public class RemoteMetricsSystemClient implements MetricsSystemClient {
     if (!tagsParam.isEmpty()) {
       tagsParam = "&tag=" + tagsParam;
     }
+    String groupByParam = Joiner.on("&groupBy=").join(groupByTags);
+    if (!groupByParam.isEmpty()) {
+      groupByParam = "&groupBy=" + groupByParam;
+    }
 
     // Only query for aggregate metrics. Currently that's the only use case.
-    String queryString = "aggregate=true&start=" + start + "&end=" + end + metricsParam + tagsParam;
+    String queryString = "aggregate=true&start=" + start + "&end=" + end + metricsParam + tagsParam + groupByParam;
     URL url = getBaseURI().resolve("query?" + queryString).toURL();
     HttpResponse response = HttpRequests.execute(HttpRequest.post(url).build());
     if (response.getResponseCode() != HttpURLConnection.HTTP_OK) {
